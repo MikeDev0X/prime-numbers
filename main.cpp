@@ -4,33 +4,52 @@
 
 #include <chrono>
 #include <thread>
+#include <omp.h>
+
 
 using namespace std;
 
-bool esPrimo(long numero) {
-  // Casos especiales
-  if (numero == 0 || numero == 1 || numero == 4) return false;
-  for (long x = 2; x < numero / 2; x++) {
-    if (numero % x == 0) return false;
+bool esPrimo(long long n){
+  if (n < 2){
+    return false;
   }
-  // Si no se pudo dividir por ninguno de los de arriba, sí es primo
+  for(long long i = 2; i<=sqrt(n);i++){
+    if(n%i==0){
+      return false;
+    }
+  }
   return true;
 }
 
+void sumaPrimosRapida(long long iterations){
+    long long n = 0;
+    long long result;
+    bool decoy = false;
 
+    //// Paralelización de código
+    #pragma omp for
+    for(long long x=0; x<iterations;x++){
+        decoy = esPrimo(x);
 
-void sumaPrimosConvencional(long iterations){
-    unsigned t0,t1;
+        if(decoy){
+            result += x;
+            cout << "result: "<<result<<endl;
+        }
+    }
 
+    cout<<"The final result is: "<< result << endl;
 
-    long result = 0;
+}
+
+void sumaPrimosConvencional(long long iterations){
+
+    long long result = 0;
     int primosCounter = 0;
 
 
-    t0=clock();
-    for(long x=1; x<=iterations; x++){
+    for(long long x=1; x<=iterations; x++){
 
-            for (long i=1; i <= x; i++){
+            for (long long i=1; i <= x; i++){
 
                 if(x%i==0){
                     primosCounter++;
@@ -62,18 +81,19 @@ void sumaPrimosConvencional(long iterations){
     //cout << "x: " << x <<endl;
     primosCounter = 0;
     }
-    t1 = clock();
-    double time = (double(t1-t0)/double(CLOCKS_PER_SEC));
-
-    cout << "Execution time: " << time << endl;
 }
 
 
 int main(){
 
+    clock_t t0=clock();
     //sumaPrimosConvencional(5000000);
-    sumaPrimosConvencional(50);
 
+    sumaPrimosRapida(5000000);
+
+    float time = (clock()-t0)*1000/CLOCKS_PER_SEC;
+
+    cout << "Execution time: " << time << " miliseconds"<<endl;
 
 
     return EXIT_SUCCESS;
